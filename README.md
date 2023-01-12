@@ -12,3 +12,12 @@ Think of it as a way to share the overall design of a python project without unv
 
 ![Selection_1426](https://user-images.githubusercontent.com/84227/211879599-b90b113e-f751-4caa-b6c4-f1a7910032bb.png)
 
+
+## Usage
+
+~~~
+carcass SOURCE DEST
+
+Generate carcass of a python project by applying code folding
+before copying .py files
+~~~
