@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# Copyright (c) 2023 Fabrice Laporte - kray.me
+# The MIT License http://www.opensource.org/licenses/mit-license.php
+
+# Generate carcass of a python project by applying code folding
+# before copying .py files
+
+
+usage() {
+    echo "carcass SOURCE DEST
+
+Generate carcass of a python project by applying code folding
+before copying .py files"
+    exit 0
+}
+
+
+# $1 - source folder
+# $1 - target folder
+carcass() {
+    # Copy source folder to target folder using rsync
+    # Keep only functions or class definitions
+    
+    local SOURCE="${1}"
+    local DEST="${2}"
+    
+    rsync -zarv --exclude=".*" --include="*/" --include="*.py" --exclude="*" "$SOURCE"/ "$DEST"
+    pushd "$DEST"
+    
+    # Filter lines we are interested in
+    find . -type f -name "*.py" -print0 | xargs -0 sed -E -i -n -e '/def |class |^$/p'
+    
+    # Merge consecutive empty lines into a single one
+    find . -name '*.py' | while IFS=$'\n' read -r FILE; do
+        sort --merge --unique "$FILE" -o "$FILE"
+    done
+    
+    # Introduce new empty lines before classes
+    find . -type f -name "*.py" -print0 | xargs -0 sed -i '/ *class .*/i\\' 
+
+    popd
+}
+
+main() {
+    POSITIONAL_ARGS=()
+    while [ $# -gt 0 ];do
+        case "$1" in
+            -h|--help)
+              usage
+              exit 0
+              ;;
+            *)
+              POSITIONAL_ARGS+=("$1") 
+              shift 
+              ;;
+        esac
+    done
+    
+    carcass "${POSITIONAL_ARGS[@]}"
+
+}
+main "$@"
